@@ -111,6 +111,10 @@ Thumbs.db:encryptable
 ehthumbs.db
 ehthumbs_vista.db
 
+# file: ~/.gitignore_global
+.DS_Store
+.idea
+
 # Dump file
 *.stackdump
 

@@ -1,1 +1,1 @@
-print('Poka sosite!')
+print('!етисос акоп')

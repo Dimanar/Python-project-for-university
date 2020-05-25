@@ -166,15 +166,12 @@ class App:
             self.my_sprite.set_index(pocket[2])
 
     def start(self):
-
         self.thread1 = threading.Thread(target=self.all)
         self.thread2 = threading.Thread(target=self.bot.listen)
 
-        # self.thread1.daemon = True
         self.thread2.daemon = True
         self.thread1.start()
         self.thread2.start()
-        # self.thread2.join()
         self.thread1.join()
 
 if __name__ == '__main__':

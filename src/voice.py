@@ -38,10 +38,12 @@ class Bot:
         print('start work')
         with self.micro as source:
             self.recog.adjust_for_ambient_noise(source)
+            print('here')
 
         stop_listening = self.recog.listen_in_background(self.micro,
                                                          self.callback)
-        while (self.__running): time.sleep(0.01)
+        while (self.__running):
+            time.sleep(0.01)
 
     def callback(self, recognizer, audio):
         print('calbaack')
@@ -58,7 +60,6 @@ class Bot:
                     cmd = cmd.replace(x, '').strip()
                 cmd = self.recognizer_cmd(cmd)
                 print(cmd['cmd'])
-                # self.execute_cmd(cmd['cmd'])
                 self.event.set_event(cmd['cmd'])
 
         except sr.UnknownValueError:

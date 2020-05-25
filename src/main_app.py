@@ -32,8 +32,10 @@ class App:
 
     def on_event(self, event):
         keys = pygame.key.get_pressed()
-        if event.type == pygame.QUIT or keys[pygame.K_ESCAPE]:
+        if event.type == pygame.QUIT:
             self.__running = False
+        elif keys[pygame.K_ESCAPE]:
+            self.__pause = not self.__pause
         if keys[pygame.K_1]:
             self.my_sprite.set_index(0)
         if keys[pygame.K_2]:
@@ -61,9 +63,23 @@ class App:
         if not self.__pause:
             self.my_group.update()
         else:
-            pass
+            self.paused()
         self.my_group.draw(self.display_surf)
         pass
+
+    def paused(self):
+        self.on_init()
+        while self.__pause:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.__pause = False
+
+            self.display_surf.fill(st.Settings.WHITE)
+            self.display_surf.blit(self.background.image, self.background.rect)
+
+            self.button('Continue', 'Quit', 1)
+
+            pygame.display.update()
 
     def game(self):
         self.clock = pygame.time.Clock()
@@ -92,33 +108,50 @@ class App:
 
             self.display_surf.fill(st.Settings.WHITE)
             self.display_surf.blit(self.background.image, self.background.rect)
-
-            self.button()
+            self.button('Go', 'Quit')
 
             pygame.display.update()
 
-    def button(self):
+    def text_objects(self, text, font, color):
+        textSurface = font.render(text, True, color)
+        return textSurface, textSurface.get_rect()
+
+    def button(self, smg1, smg2, paus=None):
         mouse = pygame.mouse.get_pos()
         click = pygame.mouse.get_pressed()
-
         if 100 + 150 > mouse[0] > 150 and 450 + 50 > mouse[1] > 450:
             pygame.draw.rect(self.display_surf,
                              st.Settings.BRIGHT_GREEN, st.Settings.button_play_cord)
-            if click[0] == 1:
+            if (click[0] == 1) and (paus is None):
                 self.__intro = False
+            elif (click[0] == 1) and (paus is not None):
+                self.__pause = not self.__pause
         else:
             pygame.draw.rect(self.display_surf,
                              st.Settings.GREEN, st.Settings.button_play_cord)
 
+        smallText = pygame.font.Font("freesansbold.ttf", 20)
+        textSurf, textRect = self.text_objects(smg1, smallText, st.Settings.BLACK)
+        textRect.center = ((150 + (100 / 2)), (450 + (50 / 2)))
+        self.display_surf.blit(textSurf, textRect)
+
         if 100 + 350 > mouse[0] > 350 and 450 + 50 > mouse[1] > 450:
             pygame.draw.rect(self.display_surf,
                              st.Settings.BRIGHT_RED, st.Settings.button_exit_cord)
-            if click[0] == 1:
+            if click[0] == 1 and paus is None:
                 self.__intro = False
                 self.__running = False
+            elif click[0] == 1 and paus is not None:
+                self.__intro = False
+                self.__running = False
+                self.__pause = False
         else:
             pygame.draw.rect(self.display_surf,
                              st.Settings.RED, st.Settings.button_exit_cord)
+        smallText = pygame.font.Font("freesansbold.ttf", 20)
+        textSurf, textRect = self.text_objects(smg2, smallText, st.Settings.BLACK)
+        textRect.center = ((350 + (100 / 2)), (450 + (50 / 2)))
+        self.display_surf.blit(textSurf, textRect)
 
     def all(self):
         self.intro()
@@ -143,7 +176,6 @@ class App:
         self.thread2.start()
         # self.thread2.join()
         self.thread1.join()
-
 
 if __name__ == '__main__':
     app = App()

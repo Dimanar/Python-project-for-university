@@ -1,80 +1,78 @@
-import pygame
-from src.background import BackGround
-from src.settings import Settings
-from src.avatar import move
-import sys
-import pyganim
+from fuzzywuzzy import fuzz
+from src.settings import Event
+import time
+import pyttsx3
+import speech_recognition as sr
 
-class App:
+class Bot:
+
     def __init__(self):
-        self.sett = Settings()
-        self._size = self.weight, self.height = Settings().screen
-        self.boltAnim = move[5]
-        self.on_init()
-        self.all_sprites = pygame.sprite.Group()
-        self.clock = pygame.time.Clock()
-        self.background = BackGround(self.sett.back_picture, self.sett.back_picture_pos)
-
-    def on_init(self):
-        pygame.init()
-        self.boltAnim.play()
-        self.display_surf = pygame.display.set_mode(
-            self._size, pygame.HWSURFACE | pygame.DOUBLEBUF)
-        pygame.display.set_caption(self.sett.name_app)
         self.__running = True
+        self.event = Event()
+        # for recognations voice
+        self.speak_engine = pyttsx3.init()
+        self.recog = sr.Recognizer()
+        self.micro = sr.Microphone(device_index=1)
+        self.voices = self.speak_engine.getProperty('voices')
+        self.speak_engine.setProperty('voice', self.voices[2].id)
+        self.opts = {
+                    'alias': ('filip', 'snake', 'bot', 'robot', 'ai', 'intelligence'),
+                    'tbr': ('reverse', 'make', 'go', 'reverse'),
+                    'cmds': {
+                        'change_one': ('one', 'first', '1'),
+                        'change_two': ('two', 'second', '2'),
+                        'change_three': ('three', 'third', '3'),
+                        'change_four': ('four', 'fourth', '4'),
+                        'change_five': ('five', 'fifth', '5'),
+                        'change_six': ('six', 'sixth', '6'),
+                        'change_seven': ('seven', 'seventh', '7'),
+                        'change_eight': ('eight', 'eighth', '8'),
+                        'change_nine': ('nine', 'ninth', '9'),
+                        'change_ten': ('ten', 'tenth', '10'),
+                        'pause_play': ('pause', 'play', 'start'),
+                        'exit': ('exit', 'finish')
+                    }
+                }
 
-    def clean(self):
-        pygame.quit()
-        sys.exit()
+    def listen(self):
+        print('start work')
+        with self.micro as source:
+            self.recog.adjust_for_ambient_noise(source)
 
-    def on_event(self, event):
-        keys = pygame.key.get_pressed()
-        if event.type == pygame.QUIT or keys[pygame.K_ESCAPE]:
-            self.boltAnim.loop = False
-            self.__running = False
-        if keys[pygame.K_q]:
-            self.boltAnim.togglePause()
-        if keys[pygame.K_w]:
-            self.boltAnim.stop()
-        if keys[pygame.K_1]:
-            self.boltAnim = move[0]
-            self.boltAnim.play()
-        if keys[pygame.K_2]:
-            self.boltAnim = move[1]
-        if keys[pygame.K_3]:
-            self.boltAnim = move[2]
-        if keys[pygame.K_4]:
-            self.boltAnim = move[3]
-        if keys[pygame.K_5]:
-            self.boltAnim = move[4]
-        if keys[pygame.K_6]:
-            self.boltAnim = move[5]
-        if keys[pygame.K_7]:
-            self.boltAnim = move[6]
-        if keys[pygame.K_8]:
-            self.boltAnim = move[7]
-        if keys[pygame.K_9]:
-            self.boltAnim = move[8]
-        if keys[pygame.K_0]:
-            self.boltAnim = move[9]
+        stop_listening = self.recog.listen_in_background(self.micro,
+                                                         self.callback)
+        while (self.__running): time.sleep(0.01)
 
-    def on_execute(self):
-        self.on_init()
-        while self.__running:
+    def callback(self, recognizer, audio):
+        print('calbaack')
+        try:
+            voice = recognizer.recognize_google(audio,
+                                                language='en-En')
+            print('[log] Done: ' + voice)
 
-            self.display_surf.blit(self.background.image, self.background.rect)
-            self.boltAnim.blit(self.display_surf, self.sett.position_avatar)
+            if voice.startswith(self.opts['alias']):
+                cmd = voice
+                for x in self.opts['alias']:
+                    cmd = cmd.replace(x, '').strip()
+                for x in self.opts['tbr']:
+                    cmd = cmd.replace(x, '').strip()
+                cmd = self.recognizer_cmd(cmd)
+                print(cmd['cmd'])
+                # self.execute_cmd(cmd['cmd'])
+                self.event.set_event(cmd['cmd'])
 
-            pygame.time.delay(100)
-            self.clock.tick(115)
+        except sr.UnknownValueError:
+            print('Unknown voice!')
+        except sr.RequestError as e:
+            print('[log] Error!Problem with internet, maybe!?')
 
-
-            for event in pygame.event.get():
-                self.on_event(event)
-            pygame.display.update()
-        self.clean()
-
-
-if __name__ == '__main__':
-    app = App()
-    app.on_execute()
+    def recognizer_cmd(self, cmd):
+        print('recognizer_cmd')
+        RC = {'cmd': '', 'percent': 0}
+        for c, v in self.opts['cmds'].items():
+            for x in v:
+                vrt = fuzz.ratio(cmd, x)
+                if vrt > RC['percent']:
+                    RC['cmd'] = c
+                    RC['percent'] = vrt
+        return RC

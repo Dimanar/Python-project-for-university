@@ -135,3 +135,9 @@ $RECYCLE.BIN/
 *.lnk
 
 # End of https://www.gitignore.io/api/venv,pycharm,windows
+/test2_pyganim.py
+/test3_pyganim.py
+/test4_pyganim.py
+/test1_pyganim.py
+/gameimages/
+/testimages/

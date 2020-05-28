@@ -1,10 +1,10 @@
-import pygame
-import sys
 import src.voice as vc
 import src.settings as st
 from src.sprite import Avatar
-import threading
 from src.sprite import BackGround
+import threading
+import pygame
+import sys
 
 class App:
 

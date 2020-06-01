@@ -83,7 +83,7 @@ class App:
 
     def game(self):
         self.clock = pygame.time.Clock()
-
+        # self.on_init()
         while self.__running:
             pygame.time.delay(100)
             self.clock.tick(200)
@@ -177,3 +177,6 @@ class App:
 if __name__ == '__main__':
     app = App()
     app.start()
+
+
+
